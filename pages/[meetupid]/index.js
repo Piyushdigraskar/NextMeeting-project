@@ -1,34 +1,31 @@
+import { MongoClient} from "mongodb";
+import { ObjectId } from "mongodb";
 
 import MeetupDetail from "../../components/meetups/MeetupDetail";
 
-const MeetupDetails = () => {
+const MeetupDetails = (props) => {
     return <MeetupDetail
-        image="https://cdn.pixabay.com/photo/2016/11/22/07/27/purdue-university-1848563_640.jpg"
-        title="First Meetup"
-        address="Some Street, new Dc"
-        description="First Meetup"
+        image={props.meetupdata.image}
+        title={props.meetupdata.title}
+        address={props.meetupdata.address}
+        description={props.meetupdata.description}
 
     />
 }
 
 export async function getStaticPaths() {
+    const client = await MongoClient.connect(`mongodb+srv://Apple:1234@cluster0.jizqfv7.mongodb.net/meetups?retryWrites=true&w=majority`)
+    const db = client.db();
+    const meetupCollections = db.collection('meetups');
+
+    const meetups = await meetupCollections.find({}, {_id: 1}).toArray();
+    client.close();
+
     return {
         fallback: false,
-        paths: [{
-            params: {
-                meetupid: 'm1'
-            }
-        },
-        {
-            params: {
-                meetupid: 'm2'
-            }
-        },
-        {
-            params: {
-                meetupid: 'm3'
-            }
-        }]
+        paths: meetups.map(meetup => ({
+            params:{meetupid:meetup._id.toString()}
+        }))
     }
 }
 
@@ -36,14 +33,23 @@ export async function getStaticProps(context) {
 
     const meetupId = context.params.meetupid;
     console.log(meetupId);
+
+    const client = await MongoClient.connect(`mongodb+srv://Apple:1234@cluster0.jizqfv7.mongodb.net/meetups?retryWrites=true&w=majority`)
+    const db = client.db();
+    const meetupCollections = db.collection('meetups');
+
+    const selectedMeetup = await meetupCollections.findOne({_id:new ObjectId(meetupId)});
+
+    client.close();
+
     return {
         props: {
             meetupdata: {
-                mage: "https://cdn.pixabay.com/photo/2016/11/22/07/27/purdue-university-1848563_640.jpg",
-                id: meetupId,
-                title: "First Meetup",
-                address: "Some Street, new Dc",
-                description: "First Meetup"
+                id: selectedMeetup._id.toString(),
+                title: selectedMeetup.data.title,
+                address:selectedMeetup.data.address,
+                image:selectedMeetup.data.image,
+                description:selectedMeetup.data.description
             }
         }
     }
