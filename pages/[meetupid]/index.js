@@ -1,16 +1,26 @@
-import { MongoClient} from "mongodb";
+import { MongoClient } from "mongodb";
 import { ObjectId } from "mongodb";
+import Head from "next/head";
 
 import MeetupDetail from "../../components/meetups/MeetupDetail";
+import { Fragment } from "react";
 
 const MeetupDetails = (props) => {
-    return <MeetupDetail
-        image={props.meetupdata.image}
-        title={props.meetupdata.title}
-        address={props.meetupdata.address}
-        description={props.meetupdata.description}
+    return (
+        <Fragment>
+            <Head>
+            <title>{props.meetupdata.title}</title>
+            <meta name="description" content={props.meetupdata.description}></meta>
+        </Head>
+            <MeetupDetail
+                image={props.meetupdata.image}
+                title={props.meetupdata.title}
+                address={props.meetupdata.address}
+                description={props.meetupdata.description}
 
-    />
+            />
+        </Fragment>
+    );
 }
 
 export async function getStaticPaths() {
@@ -18,13 +28,13 @@ export async function getStaticPaths() {
     const db = client.db();
     const meetupCollections = db.collection('meetups');
 
-    const meetups = await meetupCollections.find({}, {_id: 1}).toArray();
+    const meetups = await meetupCollections.find({}, { _id: 1 }).toArray();
     client.close();
 
     return {
         fallback: false,
         paths: meetups.map(meetup => ({
-            params:{meetupid:meetup._id.toString()}
+            params: { meetupid: meetup._id.toString() }
         }))
     }
 }
@@ -38,7 +48,7 @@ export async function getStaticProps(context) {
     const db = client.db();
     const meetupCollections = db.collection('meetups');
 
-    const selectedMeetup = await meetupCollections.findOne({_id:new ObjectId(meetupId)});
+    const selectedMeetup = await meetupCollections.findOne({ _id: new ObjectId(meetupId) });
 
     client.close();
 
@@ -47,9 +57,9 @@ export async function getStaticProps(context) {
             meetupdata: {
                 id: selectedMeetup._id.toString(),
                 title: selectedMeetup.data.title,
-                address:selectedMeetup.data.address,
-                image:selectedMeetup.data.image,
-                description:selectedMeetup.data.description
+                address: selectedMeetup.data.address,
+                image: selectedMeetup.data.image,
+                description: selectedMeetup.data.description
             }
         }
     }

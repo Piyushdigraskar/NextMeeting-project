@@ -1,6 +1,7 @@
-
+import Head from "next/head";
 import { MongoClient } from "mongodb";
 import MeetupList from "../components/meetups/MeetupList";
+import { Fragment } from "react";
 
 // const Dummy_Array = [
 //     {
@@ -29,7 +30,15 @@ import MeetupList from "../components/meetups/MeetupList";
 
 const HomePage = (props) => {
 
-    return <MeetupList meetups={props.meetups} />
+    return (
+        <Fragment>
+            <Head>
+                <title>React Meetups</title>
+                <meta name="description" content="Browse a huge list of react meetups!"></meta>
+            </Head>
+            <MeetupList meetups={props.meetups} />
+        </Fragment>
+    );
 
 }
 
